@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import urllib.parse as parse
-from html2text import html2text
+from html2text import HTML2Text
 import requests
 import json
 import logging
@@ -17,6 +17,9 @@ OCP_SUBSCRIPTION_KEY = "6963c200ca9440de8fa1eede730d8f7e"
 
 config_file = open(os.path.join(os.path.dirname(__file__), "config.json"), "r")
 config = json.loads(config_file.read())
+
+h2t = HTML2Text()
+h2t.body_width = 0 # dont wrap, see https://github.com/Alir3z4/html2text/blob/master/docs/usage.md#command-line-options
 
 def auth_jwt():
     try:
@@ -83,6 +86,7 @@ def auth_jwt():
     }
 
     token_resp = requests.post(url=api_login_url, data=adfs_body, headers=login_headers)
+    print(token_resp.json())
     access_token = token_resp.json().get("access_token")
     now = datetime.now().isoformat()
     token_file.seek(0)
@@ -137,7 +141,7 @@ if __name__ == "__main__":
         message_args = {
             "mod_code": mod["name"],
             "a_title": annc["title"],
-            "a_desc": html2text(annc["description"]),
+            "a_desc": h2t.handle(annc["description"]),
             "mod_name": mod["courseName"],
             "a_url": "https://luminus.nus.edu.sg/modules/{}/announcements/active/{}".format(mod_id, a_id)
         }
